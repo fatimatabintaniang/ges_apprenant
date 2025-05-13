@@ -77,7 +77,25 @@
         return $stats;
     };
 
+$execute = function($sql, $params = []) use ($connectToDatabase) {
+    $pdo = $connectToDatabase();
+    $stmt = $pdo->prepare($sql);
     
+    try {
+        if (!empty($params)) {
+            foreach ($params as $key => $value) {
+                $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+                $stmt->bindValue(is_int($key) ? $key + 1 : $key, $value, $paramType);
+            }
+        }
+        
+        return $stmt->execute();
+    } catch (PDOException $e) {
+        error_log("Erreur SQL (execute): " . $e->getMessage() . " - Requête: " . $sql);
+        return false;
+    }
+};
 
-$global = compact('connectToDatabase',   'isEmpty' , 'dd', 'executeselect','getDashboardStat');
+
+$global = compact('connectToDatabase',   'isEmpty' , 'dd', 'executeselect', 'execute','getDashboardStat');
 

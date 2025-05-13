@@ -1,7 +1,8 @@
 <?php
 require_once "../app/models/model.php";
-$findUserConnect = function($email, $mot_de_passe) { 
-    global $executeselect;
+global $executeselect, $execute;
+$findUserConnect = function($email, $mot_de_passe)use ($executeselect) { 
+    
     $sql = "
         SELECT *
         FROM utilisateur u
@@ -21,8 +22,8 @@ $findUserConnect = function($email, $mot_de_passe) {
     }
 };
 
-$findUserByEmail = function($email) {
-    global $executeselect;
+$findUserByEmail = function($email)use ($executeselect) {
+    
     $sql = "SELECT * FROM utilisateur WHERE email = :email";
     $params = ['email' => $email];
     
@@ -34,8 +35,8 @@ $findUserByEmail = function($email) {
     }
 };
 
-$updateUserPassword = function($email, $newPassword) {
-    global $execute;
+$updateUserPassword = function($email, $newPassword)use ($execute) {
+
     $sql = "UPDATE utilisateur SET mot_de_passe = :mot_de_passe WHERE email = :email";
     $params = [
         'email' => $email,

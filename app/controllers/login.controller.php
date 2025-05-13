@@ -1,7 +1,7 @@
 <?php
 require_once "../app/models/login.model.php";
 require_once "../app/controllers/controller.php";
-
+global $executeselect, $execute;
 if (isset($_REQUEST["page"])) {
     $page = $_REQUEST["page"] ?? "login";
     $errors = [];
@@ -57,7 +57,6 @@ if (isset($_REQUEST["page"])) {
                 }
             }
 
-            // Si erreurs, réafficher le formulaire avec les erreurs
             RenderView("security/login", ['errors' => $errors], "security.layout");
             exit;
         }
