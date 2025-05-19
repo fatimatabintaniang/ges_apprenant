@@ -1,12 +1,7 @@
 <?php
 
-require_once "../app/models/promotion.model.php";
-require_once "../app/models/model.php";
-require_once "../app/services/promotion.service.php";
-if (!isset($_SESSION["utilisateur"])) {
-    header("Location: " . WEBROOB . "?controllers=login&page=login");
-    exit;
-}
+require_once "../app/bootstrap/bootstrap.php";
+
 $page = $_REQUEST["page"];
 switch ($page) {
     case "listePromotion":

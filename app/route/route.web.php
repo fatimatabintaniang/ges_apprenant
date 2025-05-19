@@ -1,9 +1,10 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 define ("WEBROOB","http://fatima.niang.ecole221.sn:8001");
 require_once "../app/models/model.php";
-
-
+require_once "../app/controllers/controller.php";
 
 function run (){
     $controllers=[
@@ -11,18 +12,15 @@ function run (){
         "login"=>"../app/controllers/login.controller.php"
     ];
     
-    if (isset($_GET["controllers"])) {
-        $controller=$_GET["controllers"];
+    $controller=$_GET["controllers"]??"promotion";
         if(array_key_exists($controller,$controllers)){
-            
+                ControlePage(  $controller);
                 require_once $controllers[$controller];
-    
+           
         }else{
             echo("Controler inexistant");
         }
-    }else { 
-            require_once "../app/controllers/login.controller.php";
-            exit;
-        }
-    
 }
+
+
+

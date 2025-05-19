@@ -1,7 +1,43 @@
 <?php
-require_once "../app/models/login.model.php";
-require_once "../app/controllers/controller.php";
+require_once "../app/bootstrap/bootstrap.php";
 global $executeselect, $execute;
+// header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+// header("Cache-Control: post-check=0, pre-check=0", false);
+// header("Pragma: no-cache");
+// Traitement de la déconnexion 
+if (isset($_REQUEST["page"]) && $_REQUEST["page"] == "deconnexion") {
+    // Nettoyage complet de la session
+    $_SESSION = array();
+    
+    // Destruction du cookie de session
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    session_destroy();
+    session_regenerate_id(true);
+    
+    // Redirection vers la page de login avec en-têtes anti-cache
+    header("Cache-Control: no-cache, no-store, must-revalidate");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("Location: ".WEBROOB."?controllers=login&page=login");
+    exit;
+}
+
+// Vérification de la session après le traitement de déconnexion
+if (isset($_SESSION['utilisateur'])) {
+    if (!isset($_REQUEST["page"]) || $_REQUEST["page"] == "login") {
+        header("Location: " . WEBROOB . "?controllers=promotion&page=listePromotion");
+        exit;
+    }
+}
+
+// Traitement des autres pages
 if (isset($_REQUEST["page"])) {
     $page = $_REQUEST["page"] ?? "login";
     $errors = [];
@@ -10,7 +46,6 @@ if (isset($_REQUEST["page"])) {
 
     if ($page == "login") {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
-            // Afficher la page de connexion avec ou sans le modal
             $data = [
                 'showModal' => $showModal,
                 'errors' => $errors,
@@ -18,25 +53,19 @@ if (isset($_REQUEST["page"])) {
             ];
             RenderView("security/login", $data, "security.layout");
         } elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
-            // Traitement du formulaire de connexion
             $email = trim($_POST["email"] ?? '');
             $mot_de_passe = trim($_POST["mot_de_passe"] ?? '');
 
-            // Validation
-            if (empty($email)) {
-                $errors["email"] = "L'email est obligatoire.";
-            }
-            if (empty($mot_de_passe)) {
-                $errors["mot_de_passe"] = "Le mot de passe est obligatoire.";
-            }
+            if (empty($email)) $errors["email"] = "L'email est obligatoire.";
+            if (empty($mot_de_passe)) $errors["mot_de_passe"] = "Le mot de passe est obligatoire.";
 
             if (empty($errors)) {
                 $user = $findUserConnect($email, $mot_de_passe);
 
                 if ($user) {
                     $_SESSION["utilisateur"] = $user;
+                    session_regenerate_id(true);
                     
-                    // Redirection selon le rôle
                     switch ($user['role']) {
                         case 'Admin':
                             header("Location: " . WEBROOB . "?controllers=promotion&page=listePromotion");
@@ -62,12 +91,10 @@ if (isset($_REQUEST["page"])) {
         }
     } elseif ($page == "resetPassword") {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            // Traitement du formulaire de réinitialisation
             $email = trim($_POST["email"] ?? '');
             $newPassword = trim($_POST["newPassword"] ?? '');
             $confirmPassword = trim($_POST["confirmPassword"] ?? '');
 
-            // Validation
             if (empty($email)) {
                 $resetErrors['email'] = "L'email est obligatoire.";
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -87,11 +114,9 @@ if (isset($_REQUEST["page"])) {
             }
 
             if (empty($resetErrors)) {
-                // Vérifier que l'email existe
                 $userExists = $findUserByEmail($email);
                 
                 if ($userExists) {
-                    // Mettre à jour le mot de passe
                     $updateSuccess = $updateUserPassword($email, $newPassword);
                     
                     if ($updateSuccess) {
@@ -106,7 +131,6 @@ if (isset($_REQUEST["page"])) {
                 }
             }
 
-            // Si erreurs, réafficher le formulaire avec les erreurs
             RenderView("security/login", [
                 'resetErrors' => $resetErrors,
                 'showModal' => true,
@@ -114,12 +138,6 @@ if (isset($_REQUEST["page"])) {
             ], "security.layout");
             exit;
         }
-    } elseif ($page == "deconnexion") {
-        // Déconnexion
-        session_unset();
-        session_destroy();
-        header("Location:".WEBROOB."?controllers=login&page=login");
-        exit;
     }
 }
 
