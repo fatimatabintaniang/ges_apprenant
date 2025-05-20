@@ -29,7 +29,7 @@ if (isset($_REQUEST["page"]) && $_REQUEST["page"] == "deconnexion") {
     exit;
 }
 
-// Vérification de la session après le traitement de déconnexion
+//==================== Vérification de la session après le traitement de déconnexion==============================
 if (isset($_SESSION['utilisateur'])) {
     if (!isset($_REQUEST["page"]) || $_REQUEST["page"] == "login") {
         header("Location: " . WEBROOB . "?controllers=promotion&page=listePromotion");

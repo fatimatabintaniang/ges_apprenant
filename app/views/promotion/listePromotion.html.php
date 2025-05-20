@@ -4,12 +4,16 @@
       <div class="p-6 bg-[#F9EFEF] rounded-xl">
         <!-- Page Titre -->
         <div class="flex justify-between items-center mb-2">
-          <h1 class="text-2xl font-bold text-orange-500">Promotion</h1>
-          <button class="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-600 transition">
+          <div>
+            <h1 class="text-4xl font-bold text-orange-500">Promotion</h1>
+            <p class="text-sm text-gray-500 mb-4">Gérer les promotions de l'école</p>
+          </div>
+
+          <a href="?controllers=promotion&page=listePromotion&view=<?= $_GET['view'] ?? 'grid' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>&showModal=1" class="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-600 transition">
             <i class="ri-add-line"></i> Ajouter promotion
-          </button>
+          </a>
+
         </div>
-        <p class="text-sm text-gray-500 mb-4">Gérer les promotions de l'école</p>
 
         <!-- Statistique-->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -192,6 +196,90 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Modal d'ajout de promotion -->
+      <div id="addPromotionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 
+    <?= (isset($_GET['showModal']) || (isset($showModal) && $showModal)) ? 'block' : 'hidden' ?>">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-orange-500">Ajouter une promotion</h3>
+            <a href="?controllers=promotion&page=listePromotion&view=<?= $_GET['view'] ?? 'grid' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>" class="text-gray-500 hover:text-gray-700">
+              <i class="ri-close-line"></i>
+            </a>
+          </div>
+
+          <form method="post" action="?controllers=promotion&page=addPromotion">
+            <input type="hidden" name="redirect" value="?controllers=promotion&page=listePromotion&view=<?= $_GET['view'] ?? 'grid' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>">
+
+            <div class="mb-4">
+              <label for="nom" class="block text-sm font-medium text-gray-700">Nom de la promotion</label>
+              <input type="text" id="nom" name="nom" value="<?= htmlspecialchars($old['nom'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+              <?php if (!empty($errors['nom'])): ?>
+                <p class="mt-1 text-sm text-red-600"><?= $errors['nom'] ?></p>
+              <?php endif; ?>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label for="date_debut" class="block text-sm font-medium text-gray-700">Date de début</label>
+                <input type="date" id="date_debut" name="date_debut" value="<?= htmlspecialchars($old['date_debut'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                <?php if (!empty($errors['date_debut'])): ?>
+                  <p class="mt-1 text-sm text-red-600"><?= $errors['date_debut'] ?></p>
+                <?php endif; ?>
+              </div>
+              <div>
+                <label for="date_fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
+                <input type="date" id="date_fin" name="date_fin" value="<?= htmlspecialchars($old['date_fin'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                <?php if (!empty($errors['date_fin'])): ?>
+                  <p class="mt-1 text-sm text-red-600"><?= $errors['date_fin'] ?></p>
+                <?php endif; ?>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700">Statut</label>
+              <div class="mt-2">
+                <label class="inline-flex items-center">
+                  <input type="radio" name="statut" value="Actif" checked class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
+                  <span class="ml-2">Actif</span>
+                </label>
+                <label class="inline-flex items-center ml-6">
+                  <input type="radio" name="statut" value="Inactif" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
+                  <span class="ml-2">Inactif</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Dans la section référentiels -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700">Référentiels</label>
+              <div class="grid grid-cols-2 text-xs gap-2">
+                <?php foreach (findAllReferentiels() as $referentiel): ?>
+                  <div class="flex items-center">
+                    <input type="checkbox" name="referentiels[]"  value="<?= $referentiel['id_referentiel'] ?>"
+                      <?= (isset($old['referentiels']) && in_array($referentiel['id_referentiel'], $old['referentiels'])) ? 'checked' : '' ?>
+                      class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                    <label class="ml-2"><?= htmlspecialchars($referentiel['libelle']) ?></label>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+              <?php if (!empty($errors['referentiels'])): ?>
+                <p class="mt-1 text-sm text-red-600"><?= $errors['referentiels'] ?></p>
+              <?php endif; ?>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+              <a href="?controllers=promotion&page=listePromotion&view=<?= $_GET['view'] ?? 'grid' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                Annuler
+              </a>
+              <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
     </div>
 </div>
 </main>

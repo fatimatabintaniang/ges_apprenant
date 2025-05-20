@@ -10,7 +10,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 
-<body class="h-screen flex items-center justify-center p-4 font-sans overflow-hidden " style="background-image:url(assets/images/bg.png); background-size: cover;
+<body class="h-screen flex items-center justify-center p-4 font-sans overflow-hidden " style="background-image:url(assets/images/bg.jpg); background-size: cover;
 background-position: center;
 background-repeat: no-repeat;">
 
@@ -64,8 +64,10 @@ background-repeat: no-repeat;">
   </div>
 
  <!-- Modifiez cette partie dans login.html.php -->
-<div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-100 flex items-center justify-center p-4 z-50 <?= isset($_GET['showModal']) ? '' : 'hidden' ?>">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+<div id="forgotPasswordModal" class="fixed inset-0  flex items-center justify-center p-4 z-50 <?= isset($_GET['showModal']) ? '' : 'hidden' ?>" style="background-image:url(assets/images/bg1.jpg); background-size: cover;
+background-position: center;
+background-repeat: no-repeat;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 w-[40%]">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-bold text-gray-800">Réinitialiser le mot de passe</h3>
             <a href="?controllers=login&page=login" class="text-gray-500 hover:text-gray-700">

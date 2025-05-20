@@ -8,6 +8,10 @@ switch ($page) {
         showPromotionList();
         break;
 
+         case "addPromotion":
+        addPromotionHandler();
+        break;
+
         default:
         header("Location: " . WEBROOB . "?controllers=promotion&page=listePromotion");     
         break;
