@@ -12,6 +12,11 @@ switch ($page) {
         addPromotionHandler();
         break;
 
+         case "toggleStatus":
+        togglePromotionStatus();
+        break;
+        
+
         default:
         header("Location: " . WEBROOB . "?controllers=promotion&page=listePromotion");     
         break;

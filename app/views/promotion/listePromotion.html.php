@@ -135,11 +135,17 @@
                 <div class="flex justify-between">
 
                   <!-- Statut -->
-                  <div class="">
-                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold 
-      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
                       <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
                     </span>
+                    <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
+                      class="text-gray-500 hover:text-orange-500 transition"
+                      title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
+                      <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
+
+                    </a>
                   </div>
                   <button class="text-sm text-orange-500 font-medium hover:underline">Voir détails</button>
                 </div>
@@ -179,14 +185,22 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td class="px-6 py-4  text-sm text-gray-500">
                   <?= htmlspecialchars($promotion["referentiel"] ?? 'Non défini') ?>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-              <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                    <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                      <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
+                    </span>
+                    <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
+                      class="text-gray-500 hover:text-orange-500 transition"
+                      title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
+                      <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
+
+                    </a>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <a href="#" class="text-orange-600 hover:text-orange-900">Voir détails</a>
@@ -256,7 +270,7 @@
               <div class="grid grid-cols-2 text-xs gap-2">
                 <?php foreach (findAllReferentiels() as $referentiel): ?>
                   <div class="flex items-center">
-                    <input type="checkbox" name="referentiels[]"  value="<?= $referentiel['id_referentiel'] ?>"
+                    <input type="checkbox" name="referentiels[]" value="<?= $referentiel['id_referentiel'] ?>"
                       <?= (isset($old['referentiels']) && in_array($referentiel['id_referentiel'], $old['referentiels'])) ? 'checked' : '' ?>
                       class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
                     <label class="ml-2"><?= htmlspecialchars($referentiel['libelle']) ?></label>

@@ -1,6 +1,6 @@
 <?php
-require_once "../app/models/model.php";
-require_once "../app/controllers/controller.php";
+require_once "../app/bootstrap/bootstrap.php";
+
 function showReferentielList() {
     $search = $_GET['search'] ?? '';
     
@@ -9,10 +9,10 @@ function showReferentielList() {
     ], "base.layout");
 }
 function addReferentielHandler() {
-    session_start();
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $errors = validateReferentielData($_POST);
+              $errors = validateData($_POST, 'referentiel');
+
         
         if (empty($errors)) {
             // Tentative d'ajout
@@ -47,7 +47,8 @@ function updateReferentielHandler() {
         exit;
     }
 
-    $errors = validateReferentielData($_POST);
+    // Validation
+     $errors = validateData($_POST, 'referentiel');
     $referentiel_id = $_POST['referentiel_id'] ?? null;
 
     if (empty($errors) && $referentiel_id) {
@@ -60,9 +61,8 @@ function updateReferentielHandler() {
                 $_POST['capacite'],
                 $_POST['session']
             );
-            
             if ($success) {
-                header("Location: ?controllers=referentiel&page=listeReferentiel&search=".urlencode($_GET['search'] ?? '')."&success=1");
+                header("Location: ?controllers=referentiel&page=listeReferentiel&success=1");
                 exit;
             }
         } catch (Exception $e) {
@@ -70,12 +70,35 @@ function updateReferentielHandler() {
         }
     }
 
-    // En cas d'erreur, réafficher le formulaire
-    RenderView("referentiel/listeReferentiel", [
-        'referentiels' => findAllReferentiel($_GET['search'] ?? ''),
-        'referentielToEdit' => $_POST, // Pour pré-remplir le formulaire avec les données soumises
-        'errors' => $errors,
-        'showModal' => true,
-        'action' => 'edit'
-    ], "base.layout");
+    // Stockage en session comme pour l'ajout
+    $_SESSION['errors'] = $errors;
+    $_SESSION['old'] = $_POST;
+    header("Location: ?controllers=referentiel&page=listeReferentiel&action=edit&referentiel_id=$referentiel_id&showModal=1");
+    exit;
+}
+
+// Dans votre contrôleur référentiel
+function archiveReferentielHandler() {
+    // Vérifier si l'ID est présent
+    if (!isset($_GET['referentiel_id'])) {
+        $_SESSION['error'] = "ID du référentiel manquant";
+        header("Location: ?controllers=referentiel&page=listeReferentiel");
+        exit;
+    }
+
+    $id = $_GET['referentiel_id'];
+    $search = $_GET['search'] ?? '';
+
+    // Appeler la fonction d'archivage du modèle
+    $success = archiveReferentiel($id);
+
+    if ($success) {
+        $_SESSION['success'] = "Référentiel archivé avec succès";
+    } else {
+        $_SESSION['error'] = "Erreur lors de l'archivage du référentiel";
+    }
+
+    // Rediriger vers la liste avec le paramètre de recherche
+    header("Location: ?controllers=referentiel&page=listeReferentiel&search=$search");
+    exit;
 }

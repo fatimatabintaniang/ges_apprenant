@@ -65,7 +65,7 @@
         $query = $db->query("SELECT COUNT(*) as total FROM apprenant");
         $stats["total_apprenant"] = $query->fetch()["total"];
     
-        $query = $db->query("SELECT COUNT(*) as total FROM referentiel");
+        $query = $db->query("SELECT COUNT(*) as total FROM referentiel WHERE archived=FALSE");
         $stats["total_referentiel"] = $query->fetch()["total"];
     
         $query = $db->query("SELECT COUNT(*) as total FROM promotion WHERE statut='Actif'");

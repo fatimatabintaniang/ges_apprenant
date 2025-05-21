@@ -6,3 +6,4 @@ require_once "../app/models/model.php";
 require_once "../app/models/referentiel.model.php";
 require_once "../app/services/referentiel.service.php";
 require_once "../app/services/promotion.service.php";
+require_once "../app/services/validator.service.php";

@@ -1,6 +1,6 @@
 <?php
-require_once "../app/models/model.php";
-require_once "../app/controllers/controller.php";
+require_once "../app/bootstrap/bootstrap.php";
+
 function showPromotionList() {
     global $getDashboardStat;
     
@@ -23,7 +23,7 @@ function addPromotionHandler() {
     global $getDashboardStat;
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $errors = validatePromotionData($_POST);
+        $errors = validateData($_POST, 'promotion');
         
         if (empty($errors)) {
             $success = addPromotionWithReferentiels(
@@ -59,3 +59,26 @@ function addPromotionHandler() {
     }
 }
 
+function togglePromotionStatus() {
+    $id = $_GET['id'] ?? null;
+    $currentStatus = $_GET['current_status'] ?? null;
+    $redirect = $_GET['redirect'] ?? '?controllers=promotion&page=listePromotion';
+    
+    if ($id && $currentStatus) {
+        // Déterminer le nouveau statut
+        $newStatus = ($currentStatus === 'Actif') ? 'Inactif' : 'Actif';
+        
+        // Appel de la fonction du modèle
+        $success = updatePromotionStatus($id, $newStatus);
+        
+        if ($success) {
+            header("Location: $redirect&status_toggled=1");
+        } else {
+            header("Location: $redirect&error=1");
+        }
+        exit;
+    }
+    
+    header("Location: $redirect");
+    exit;
+}

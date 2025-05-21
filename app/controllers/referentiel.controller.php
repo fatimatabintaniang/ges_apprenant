@@ -7,16 +7,18 @@ switch ($page) {
     case "listeReferentiel":
         $data = [
             'referentiels' => findAllReferentiel($_GET['search'] ?? ''),
-            'errors' => $_SESSION['errors'] ?? [], // Récupère les erreurs de session
-            'old' => $_SESSION['old'] ?? [], // Récupère les anciennes valeurs
+        'errors' => $_SESSION['errors'] ?? [],
+        'old' => $_SESSION['old'] ?? [],
+        'showConfirmModal' => isset($_GET['ask_confirm']) && isset($_GET['referentiel_id']),
+        'confirmReferentielId' => $_GET['referentiel_id'] ?? null,
+        'search' => $_GET['search'] ?? ''
         ];
 
-        if (isset($_GET['action']) && $_GET['action'] == 'edit') {
-            $data['referentielToEdit'] = getReferentielToEdit($_GET['referentiel_id']);
-        }
+        // Nettoyez les erreurs après utilisation
+        unset($_SESSION['errors'], $_SESSION['old']);
 
-        if (isset($_GET['showModal'])) {
-            $data['showModal'] = true;
+        if (isset($_GET['action']) && $_GET['action'] == 'edit') {
+            $data['referentielToEdit'] = !empty($data['old']) ? $data['old'] : getReferentielToEdit($_GET['referentiel_id']);
         }
 
         RenderView("referentiel/listeReferentiel", $data, "base.layout");
@@ -27,6 +29,9 @@ switch ($page) {
 
     case "updateReferentiel":
         updateReferentielHandler();
+        break;
+case "archiveReferentiel":
+        archiveReferentielHandler();
         break;
 
     default:

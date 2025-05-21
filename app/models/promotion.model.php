@@ -1,5 +1,7 @@
 <?php
 require_once "../app/models/model.php";
+
+//===============================Fonction pour recuperer la liste des promotions================================
 function findAllPromotion($filter = 'all', $search = '') {
     global $executeselect;
     
@@ -64,7 +66,7 @@ function findAllPromotion($filter = 'all', $search = '') {
     }
 }
 
-//========================================Ajout promotion=========================================
+//==================================================Ajout promotion=============================================
 function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $referentiels) {
     global $execute, $executeselect;
 
@@ -114,43 +116,37 @@ function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $re
 
     return $promoId;
 }
+
+//======================================fonction pour recuperer la liste des referentiels=======================
 function findAllReferentiels() {
     global $executeselect;
     
-    $sql = "SELECT id_referentiel, libelle FROM referentiel ORDER BY libelle";
+    $sql = "SELECT id_referentiel, libelle FROM referentiel WHERE archived = FALSE ORDER BY libelle";
     return $executeselect($sql, true);
 }
 
-function validatePromotionData($data) {
-    global $executeselect;
-    $errors = [];
-    
-    // Validation du nom
-    if (empty($data['nom'])) {
-        $errors['nom'] = "Le nom de la promotion est obligatoire";
-    } else {
-        $sql = "SELECT COUNT(*) as count FROM promotion WHERE nom = :nom";
-        $count = $executeselect($sql, false, [':nom' => $data['nom']]);
-        if ($count && $count['count'] > 0) {
-            $errors['nom'] = "Ce nom de promotion existe déjà";
-        }
-    }
-    
-    // Validation des dates
-    if (empty($data['date_debut']) || !strtotime($data['date_debut'])) {
-        $errors['date_debut'] = "Date de début invalide";
-    }
-    
-    if (empty($data['date_fin']) || !strtotime($data['date_fin'])) {
-        $errors['date_fin'] = "Date de fin invalide";
-    } elseif (strtotime($data['date_fin']) < strtotime($data['date_debut'])) {
-        $errors['date_fin'] = "La date de fin doit être postérieure à la date de début";
-    }
 
-    // Validation des référentiels (corrigé le nom du champ)
-    if (empty($data['referentiels'])) {
-        $errors['referentiels'] = "Sélectionner au moins un référentiel";
+//========================fonction pour modifier le statut===========================================
+function updatePromotionStatus($id_promotion, $new_status) {
+    global $execute;
+    
+    // Validation des données
+    if (!in_array($new_status, ['Actif', 'Inactif'])) {
+        error_log("Statut invalide: $new_status");
+        return false;
     }
     
-    return $errors;
+    try {
+        $sql = "UPDATE promotion SET statut = :statut WHERE id_promotion = :id";
+        $params = [
+            ':statut' => $new_status,
+            ':id' => $id_promotion
+        ];
+        
+        return $execute($sql, $params);
+        
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la modification du statut: " . $e->getMessage());
+        return false;
+    }
 }
