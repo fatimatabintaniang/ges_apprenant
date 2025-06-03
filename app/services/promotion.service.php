@@ -23,15 +23,36 @@ function addPromotionHandler() {
     global $getDashboardStat;
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $errors = validateData($_POST, 'promotion');
+
+        $data = array_merge($_POST, ['image_file' => $_FILES['image'] ?? null]);
+        $errors = validateData($data, 'promotion');
         
         if (empty($errors)) {
+
+            $escapedImage=null;
+             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                    
+                    
+                    $imageData = file_get_contents($_FILES['image']['tmp_name']);
+
+                    
+        
+                  $conn = pg_connect("host=localhost dbname=ges_apprenant user=postgres password=niang@4693 port=8000");
+                  
+                    $escapedImage = pg_escape_bytea($conn,$imageData);
+
+
+                } else {
+                    echo "Aucun fichier n'a été téléchargé ou une erreur est survenue.";
+                }
             $success = addPromotionWithReferentiels(
                 $_POST['nom'],
                 $_POST['date_debut'],
                 $_POST['date_fin'],
                 $_POST['statut'],
-                $_POST['referentiels'] ?? []
+                $_POST['referentiels'] ?? [],
+                $escapedImage
+
             );
             
             if ($success) {

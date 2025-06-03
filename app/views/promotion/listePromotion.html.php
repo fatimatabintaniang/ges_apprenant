@@ -86,130 +86,156 @@
             </a>
           </div>
         </div>
-      </div>
 
-      <!-- Affichage en grille-->
-      <div class="<?= ($_GET['view'] ?? 'grid') === 'grid' ? 'block' : 'hidden' ?> grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-6">
-        <?php if (empty($promotions)): ?>
-          <div class="col-span-full py-16 text-center animate-pulse">
-            <div class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-6 shadow-inner">
-              <i class="fas fa-chalkboard-teacher text-4xl text-gray-300"></i>
+        <!-- Affichage en grille-->
+        <div class="<?= ($_GET['view'] ?? 'grid') === 'grid' ? 'block' : 'hidden' ?> grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-6">
+          <?php if (empty($promotions)): ?>
+            <div class="col-span-full py-16 text-center animate-pulse">
+              <div class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-6 shadow-inner">
+                <i class="fas fa-chalkboard-teacher text-4xl text-gray-300"></i>
+              </div>
+              <h3 class="text-xl font-medium text-gray-700">Aucun promotions programmé</h3>
+              <p class="text-gray-400 mt-2">Les promotions apparaîtront ici</p>
             </div>
-            <h3 class="text-xl font-medium text-gray-700">Aucun promotions programmé</h3>
-            <p class="text-gray-400 mt-2">Les promotions apparaîtront ici</p>
-          </div>
-        <?php else: ?>
-          <?php foreach ($promotions as $promotion): ?>
-            <div class="relative bg-white rounded-xl overflow-hidden shadow-md border hover:shadow-xl transition-shadow duration-300 group">
+          <?php else: ?>
+            <?php foreach ($promotions as $promotion): ?>
+              <div class="relative bg-white rounded-xl overflow-hidden shadow-md border hover:shadow-xl transition-shadow duration-300 group">
 
-              <!-- Bandeau couleur-->
-              <div class="h-2 bg-gradient-to-r from-orange-400 to-red-500 w-full"></div>
+                <!-- Bandeau couleur-->
+                <div class="h-2 bg-gradient-to-r from-orange-400 to-red-500 w-full"></div>
 
-              <div class="p-5">
-                <!-- Nom de la promotion -->
-                <div class="mb-2 flex justify-between">
-                  <div>
-                    <h3 class="text-xl font-bold text-gray-800">
-                      <?= htmlspecialchars($promotion["promotion"] ?? 'Non défini') ?>
-                    </h3>
-                    <div class="flex text-xs text-gray-500 mb-3">
-                      <span><?= htmlspecialchars($promotion["date_debut"] ?? 'Non assigné') ?></span>
-                      <span>---</span>
-                      <span><?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?></span>
+                <div class="p-5">
+                  <!-- Nom de la promotion -->
+                  <div class="mb-2 flex justify-between">
+                    <div>
+                      <h3 class="text-xl font-bold text-gray-800">
+                        <?= htmlspecialchars($promotion["promotion"] ?? 'Non défini') ?>
+                      </h3>
+                      <div class="flex text-xs text-gray-500 mb-3">
+                        <span><?= htmlspecialchars($promotion["date_debut"] ?? 'Non assigné') ?></span>
+                        <span>---</span>
+                        <span><?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?></span>
+                      </div>
+                    </div>
+                    <div>
+                      <!-- <img class="rounded-full w-10 h-10 img-cover" src="<?= htmlspecialchars($promotion['image_path']) ?>" alt=""> -->
+
+                        <?php if (!empty($promotion['image'])): ?>
+                            <?php $mime = getMimeTypeFromBinary($promotion['image']); ?>
+                            <img class="rounded w-10 h-10 object-cover"
+                                src="data:<?= $mime ?>;base64,<?= base64_encode($promotion['image']) ?>"
+                                alt="Image du référentiel">
+                        <?php else: ?>
+                            <div class="w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-500">
+                                Pas d’image
+                            </div>
+                        <?php endif; ?>
+
                     </div>
                   </div>
-                  <div class="w-[10%] h-[10%] rounded-full p-6 bg-gray-200"></div>
-                </div>
 
 
-                <!-- Nombre d'apprenants -->
-                <div class="mb-4">
-                  <span class="inline-block bg-purple-100 text-black px-3 py-1 rounded-full text-sm font-medium">
-                    <?= htmlspecialchars($promotion["nombre_apprenants"] ?? '0') ?> Apprenant(s)
-                  </span>
-                </div>
-
-
-
-                <!-- Action -->
-                <div class="flex justify-between">
-
-                  <!-- Statut -->
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                      <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
+                  <!-- Nombre d'apprenants -->
+                  <div class="mb-4">
+                    <span class="inline-block bg-purple-100 text-black px-3 py-1 rounded-full text-sm font-medium">
+                      <?= htmlspecialchars($promotion["nombre_apprenants"] ?? '0') ?> Apprenant(s)
                     </span>
-                    <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
-                      class="text-gray-500 hover:text-orange-500 transition"
-                      title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
-                      <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
-
-                    </a>
                   </div>
-                  <button class="text-sm text-orange-500 font-medium hover:underline">Voir détails</button>
+
+
+
+                  <!-- Action -->
+                  <div class="flex justify-between">
+
+                    <!-- Statut -->
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                        <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
+                      </span>
+                      <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
+                        class="text-gray-500 hover:text-orange-500 transition"
+                        title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
+                        <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
+
+                      </a>
+                    </div>
+                    <button class="text-sm text-orange-500 font-medium hover:underline">Voir détails</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </div>
-
-
-      <!-- Affichage en liste -->
-      <div class="<?= ($_GET['view'] ?? 'grid') === 'list' ? 'block' : 'hidden' ?> bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date_debut</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date_fin</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référentiels</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <?php foreach ($promotions as $promotion): ?>
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="w-10 h-10 rounded-full bg-gray-200"></div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  <?= htmlspecialchars($promotion["promotion"] ?? 'Non défini') ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <?= htmlspecialchars($promotion["date_debut"] ?? 'Non assigné') ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?>
-                </td>
-                <td class="px-6 py-4  text-sm text-gray-500">
-                  <?= htmlspecialchars($promotion["referentiel"] ?? 'Non défini') ?>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                      <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
-                    </span>
-                    <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
-                      class="text-gray-500 hover:text-orange-500 transition"
-                      title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
-                      <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
-
-                    </a>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-orange-600 hover:text-orange-900">Voir détails</a>
-                </td>
-              </tr>
             <?php endforeach; ?>
-          </tbody>
-        </table>
+          <?php endif; ?>
+        </div>
+
+
+        <!-- Affichage en liste -->
+        <div class="<?= ($_GET['view'] ?? 'grid') === 'list' ? 'block' : 'hidden' ?> bg-white rounded-lg shadow overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date_debut</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date_fin</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référentiels</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <?php foreach ($promotions as $promotion): ?>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <!-- <img class="rounded-full w-10 h-10 img-cover" src="<?= htmlspecialchars($promotion['image_path']) ?>" alt=""> -->
+                      <?php if (!empty($promotion['image'])): ?>
+                            <?php $mime = getMimeTypeFromBinary($promotion['image']); ?>
+                            <img class="rounded w-10 h-10 object-cover"
+                                src="data:<?= $mime ?>;base64,<?= base64_encode($promotion['image']) ?>"
+                                alt="Image du référentiel">
+                        <?php else: ?>
+                            <div class="w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-500">
+                                Pas d’image
+                            </div>
+                        <?php endif; ?>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <?= htmlspecialchars($promotion["promotion"] ?? 'Non défini') ?>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <?= htmlspecialchars($promotion["date_debut"] ?? 'Non assigné') ?>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?>
+                  </td>
+                  <td class="px-6 py-4  text-sm text-gray-500">
+                    <?= htmlspecialchars($promotion["referentiel"] ?? 'Non défini') ?>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+      <?= $promotion['statut'] === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                        <?= htmlspecialchars($promotion["statut"] ?? 'Inconnu') ?>
+                      </span>
+                      <a href="?controllers=promotion&page=toggleStatus&id=<?= $promotion['id_promotion'] ?>&current_status=<?= $promotion['statut'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>"
+                        class="text-gray-500 hover:text-orange-500 transition"
+                        title="<?= $promotion['statut'] === 'Actif' ? 'Désactiver' : 'Activer' ?>">
+                        <i class="fas fa-toggle-<?= $promotion['statut'] === 'Actif' ? 'on' : 'off' ?>"></i>
+
+                      </a>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="#" class="text-orange-600 hover:text-orange-900">Voir détails</a>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+
       </div>
+
 
       <!-- Modal d'ajout de promotion -->
       <div id="addPromotionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 
@@ -222,7 +248,7 @@
             </a>
           </div>
 
-          <form method="post" action="?controllers=promotion&page=addPromotion">
+          <form method="post" action="?controllers=promotion&page=addPromotion" enctype="multipart/form-data">
             <input type="hidden" name="redirect" value="?controllers=promotion&page=listePromotion&view=<?= $_GET['view'] ?? 'grid' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>">
 
             <div class="mb-4">
@@ -232,6 +258,20 @@
                 <p class="mt-1 text-sm text-red-600"><?= $errors['nom'] ?></p>
               <?php endif; ?>
             </div>
+
+          
+
+             <!-- Champ Image -->
+                <div class="mb-4">
+                    <label for="referentielImage" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                    <input type="file" name="image" id="referentielImage" accept="image/*" value="<?= htmlspecialchars($old['image'] ?? '') ?>"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+                    <?php if (!empty($errors['image'])): ?>
+                        <p class="mt-1 text-sm text-red-600"><?= $errors['image'] ?></p>
+                    <?php endif; ?>
+
+
+                </div>
 
             <div class="grid grid-cols-2 gap-4 mb-4">
               <div>

@@ -96,6 +96,14 @@ $execute = function($sql, $params = []) use ($connectToDatabase) {
     }
 };
 
+function getMimeTypeFromBinary($binaryData): string
+{
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_buffer($finfo, $binaryData);
+    finfo_close($finfo);
+
+    return $mimeType ?: 'application/octet-stream';
+}
 
 $global = compact('connectToDatabase',   'isEmpty' , 'dd', 'executeselect', 'execute','getDashboardStat');
 

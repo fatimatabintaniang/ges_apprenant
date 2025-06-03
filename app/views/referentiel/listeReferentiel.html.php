@@ -1,6 +1,6 @@
 <div class="flex h-screen">
     <div class="p-6 overflow-y-auto h-[80vh] -mt-10">
-        <div class="p-6 bg-[#F9EFEF] rounded-xl">
+        <div class="p-6 bg-[#F9EFEF]  rounded-xl">
             <!-- Page Titre -->
             <div class="items-center mb-2">
                 <h1 class="text-sm font-bold text-gray-100">Retour au referentiels actif</h1>
@@ -33,7 +33,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="RefContainer">
                 <?php foreach ($referentiels as $referentiel): ?>
                     <div class="bg-white rounded-lg shadow">
-                        <img class="rounded" src="<?= htmlspecialchars($referentiel['image']) ?>" alt="">
+                        <?php if (!empty($referentiel['image'])): ?>
+                            <?php $mime = getMimeTypeFromBinary($referentiel['image']); ?>
+                            <img class="rounded w-full h-48 object-cover"
+                                src="data:<?= $mime ?>;base64,<?= base64_encode($referentiel['image']) ?>"
+                                alt="Image du référentiel">
+                        <?php else: ?>
+                            <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                                Pas d’image
+                            </div>
+                        <?php endif; ?>
                         <div class="p-4">
                             <h3 class="font-bold text-lg text-red-500"><?= htmlspecialchars($referentiel['libelle']) ?></h3>
                             <h3 class="text-sm">Capacite: <?= htmlspecialchars($referentiel['capacite']) ?> places</h3>
@@ -64,8 +73,7 @@
                 </a>
             </div>
 
-            <form method="post" action="?controllers=referentiel&page=<?= isset($_GET['action']) && $_GET['action'] == 'edit' ? 'updateReferentiel' : 'addReferentiel' ?>" class="p-6">
-                <?php if (isset($_GET['action']) && $_GET['action'] == 'edit'): ?>
+            <form method="post" action="?controllers=referentiel&page=<?= isset($_GET['action']) && $_GET['action'] == 'edit' ? 'updateReferentiel' : 'addReferentiel' ?>" enctype="multipart/form-data" class="p-6"> <?php if (isset($_GET['action']) && $_GET['action'] == 'edit'): ?>
                     <input type="hidden" name="referentiel_id" value="<?= $_GET['referentiel_id'] ?>">
                 <?php endif; ?>
 
@@ -86,17 +94,14 @@
 
                 <!-- Champ Image -->
                 <div class="mb-4">
-                    <label for="referentielImage" class="block text-sm font-medium text-gray-700 mb-1">URL de l'image</label>
-                    <input type="url" name="image" id="referentielImage"
-                        value="<?= htmlspecialchars(
-                                    isset($_GET['action']) && $_GET['action'] == 'edit' ?
-                                        ($referentielToEdit['image'] ?? '') : ($old['image'] ?? '')
-                                ) ?>"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                        placeholder="https://example.com/image.jpg">
+                    <label for="referentielImage" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                    <input type="file" name="image" id="referentielImage" accept="image/*"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
                     <?php if (!empty($errors['image'])): ?>
                         <p class="mt-1 text-sm text-red-600"><?= $errors['image'] ?></p>
                     <?php endif; ?>
+
+
                 </div>
 
                 <!-- Champ Description -->
@@ -167,10 +172,10 @@
                     class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
                     Annuler
                 </a>
-              <a href="?controllers=referentiel&page=archiveReferentiel&referentiel_id=<?= $confirmReferentielId ?>&search=<?= $search ?>"
-    class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
-    Confirmer
-</a>
+                <a href="?controllers=referentiel&page=archiveReferentiel&referentiel_id=<?= $confirmReferentielId ?>&search=<?= $search ?>"
+                    class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                    Confirmer
+                </a>
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 <?php
 require_once "../app/models/model.php";
 
+
 //===============================Fonction pour recuperer la liste des promotions================================
 function findAllPromotion($filter = 'all', $search = '') {
     global $executeselect;
@@ -13,6 +14,7 @@ function findAllPromotion($filter = 'all', $search = '') {
             p.date_debut,
             p.date_fin,
             p.statut,
+            P.image,
             STRING_AGG(r.libelle, ', ') AS referentiel,
             COUNT(DISTINCT a.id_apprenant) AS nombre_apprenants
         FROM 
@@ -50,14 +52,23 @@ function findAllPromotion($filter = 'all', $search = '') {
     // Finalisation de la requête
     $sql .= "
         GROUP BY 
-            p.id_promotion, p.nom, p.date_debut, p.date_fin, p.statut
+            p.id_promotion, p.nom, p.date_debut, p.date_fin, p.statut,p.image
         ORDER BY 
             p.date_debut DESC
     ";
     
     try {
-        $result = $executeselect($sql, true, $params);
-        return is_array($result) ? $result : [];
+      $promotions = $executeselect($sql, true, $params) ?: [];
+
+       // Important : décoder les images BYTEA
+        foreach ($promotions as &$ref) {
+            if (!empty($ref['image'])) {
+                // Si ton driver PDO est PostgreSQL, il faut "déséchapper" les données BYTEA
+                $ref['image'] = stream_get_contents($ref['image']); // Pour éviter des erreurs si 'image' est une ressource
+            }
+        }
+
+        return $promotions;
         
     } catch (PDOException $e) {
         error_log("Erreur PDO dans findAllPromotion: " . $e->getMessage());
@@ -67,7 +78,7 @@ function findAllPromotion($filter = 'all', $search = '') {
 }
 
 //==================================================Ajout promotion=============================================
-function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $referentiels) {
+function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $referentiels, $imageData) {
     global $execute, $executeselect;
 
     // 1. Vérifier si le nom existe déjà
@@ -79,14 +90,15 @@ function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $re
     }
 
     // 2. Ajouter la promotion
-    $sql = "INSERT INTO promotion (nom, date_debut, date_fin, statut) 
-            VALUES (:nom, :date_debut, :date_fin, :statut) RETURNING id_promotion";
+    $sql = "INSERT INTO promotion (nom, date_debut, date_fin, statut,image) 
+            VALUES (:nom, :date_debut, :date_fin, :statut,:image) RETURNING id_promotion";
     
     $params = [
         ':nom' => $nom,
         ':date_debut' => $date_debut,
         ':date_fin' => $date_fin,
-        ':statut' => $statut
+        ':statut' => $statut,
+        ':image' => $imageData
     ];
     
     $result = $executeselect($sql, false, $params);
@@ -108,9 +120,7 @@ function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $re
         ]);
         
         if (!$success) {
-            // On continue quand même mais on log l'erreur
             error_log("Échec de l'ajout du référentiel $referentielId à la promotion $promoId");
-            // Vous pouvez choisir de return false ici si vous voulez arrêter complètement
         }
     }
 
@@ -124,7 +134,6 @@ function findAllReferentiels() {
     $sql = "SELECT id_referentiel, libelle FROM referentiel WHERE archived = FALSE ORDER BY libelle";
     return $executeselect($sql, true);
 }
-
 
 //========================fonction pour modifier le statut===========================================
 function updatePromotionStatus($id_promotion, $new_status) {
@@ -149,4 +158,4 @@ function updatePromotionStatus($id_promotion, $new_status) {
         error_log("Erreur lors de la modification du statut: " . $e->getMessage());
         return false;
     }
-}
+} 

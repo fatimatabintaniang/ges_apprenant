@@ -10,6 +10,7 @@ function run (){
     $controllers=[
         "promotion"=>"../app/controllers/promotion.controller.php",
         "referentiel"=>"../app/controllers/referentiel.controller.php",
+        "apprenant"=>"../app/controllers/apprenant.controller.php",
         "login"=>"../app/controllers/login.controller.php"
     ];
     

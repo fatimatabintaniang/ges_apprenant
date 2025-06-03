@@ -13,7 +13,7 @@
      <a href="" class="flex items-center gap-2 hover:text-white"><i class="ri-dashboard-line"></i> Tableau de bord</a>
      <a href="<?=WEBROOB?>?controllers=promotion&page=listePromotion" class="flex items-center gap-2 text-white font-bold"><i class="ri-group-line"></i> Promotions</a>
      <a href="<?=WEBROOB?>?controllers=referentiel&page=listeReferentiel" class="flex items-center gap-2 hover:text-white"><i class="ri-booklet-line"></i> Referentiels</a>
-     <a href="#" class="flex items-center gap-2 hover:text-white"><i class="ri-user-line"></i> Apprenant</a>
+     <a href="<?=WEBROOB?>?controllers=apprenant&page=listeApprenant" class="flex items-center gap-2 hover:text-white"><i class="ri-user-line"></i> Apprenant</a>
      <a href="#" class="flex items-center gap-2 hover:text-white"><i class="ri-calendar-check-line"></i> Gestion des présences</a>
      <a href="#" class="flex items-center gap-2 hover:text-white"><i class="ri-computer-line"></i> Kits et Laptop</a>
      <a href="#" class="flex items-center gap-2 hover:text-white"><i class="ri-bar-chart-line"></i> Rapport et Stats</a>

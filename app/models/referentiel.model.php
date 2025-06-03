@@ -1,11 +1,16 @@
 <?php
 //======================Fonction qui recupere la liste des referentiels=================================
+
+
+
+
 function findAllReferentiel($search = '')
 {
     global $executeselect;
 
-    $sql = "SELECT r.id_referentiel, r.libelle,r.image,r.description,r.session,r.capacite FROM referentiel r
-     WHERE r.archived = FALSE";
+    $sql = "SELECT r.id_referentiel, r.libelle, r.image, r.description, r.session, r.capacite 
+            FROM referentiel r
+            WHERE r.archived = FALSE";
     $params = [];
 
     if (!empty($search)) {
@@ -16,19 +21,32 @@ function findAllReferentiel($search = '')
     $sql .= " ORDER BY r.libelle ASC";
 
     try {
-        return $executeselect($sql, true, $params) ?: [];
+        $referentiels = $executeselect($sql, true, $params) ?: [];
+
+        // Important : décoder les images BYTEA
+        foreach ($referentiels as &$ref) {
+            if (!empty($ref['image'])) {
+                // Si ton driver PDO est PostgreSQL, il faut "déséchapper" les données BYTEA
+                $ref['image'] = stream_get_contents($ref['image']); // Pour éviter des erreurs si 'image' est une ressource
+            }
+        }
+
+        return $referentiels;
+
     } catch (PDOException $e) {
         error_log("Erreur PDO: " . $e->getMessage());
         return [];
     }
 }
 
-//========================================Ajout referentiel=========================================
-function addReferentiels($libelle, $description, $image, $capacite, $session)
-{
-    global $execute, $executeselect;
 
-    // 1. Vérification de l'existence du libellé
+//========================================Ajout referentiel=========================================
+// Modifier la fonction addReferentiels
+function addReferentiels($libelle, $description, $imageData, $capacite, $session) {
+    global $execute, $executeselect;
+    
+
+    // Vérification de l'existence du libellé
     $checkSql = "SELECT id_referentiel FROM referentiel WHERE libelle = :libelle";
     $existing = $executeselect($checkSql, false, [':libelle' => $libelle]);
 
@@ -36,55 +54,57 @@ function addReferentiels($libelle, $description, $image, $capacite, $session)
         throw new Exception("Un référentiel avec ce libellé existe déjà");
     }
 
-    // 2. inserer un referentiel
+    // Modification de la requête pour utiliser bytea
     $sql = "INSERT INTO referentiel (libelle, description, image, capacite, session) 
             VALUES (:libelle, :description, :image, :capacite, :session)";
 
     $params = [
         ':libelle' => $libelle,
         ':description' => $description,
-        ':image' => $image,
+        ':image' => $imageData, // Maintenant nous stockons les données binaires
         ':capacite' => (int)$capacite,
         ':session' => $session
     ];
 
-    // 3. Exécution avec gestion d'erreur améliorée
-    $result = $execute($sql, $params);
-
-    if (!$result) {
-        // Récupération de l'erreur PDO directement
-        global $connectToDatabase;
-        $pdo = $connectToDatabase();
-        $errorInfo = $pdo->errorInfo();
-        throw new Exception("Erreur SQL: " . ($errorInfo[2] ?? "Inconnue"));
-    }
-
-    return $result;
+    return $execute($sql, $params);
 }
 
-//====================fonction pour modifier un referentiel=====================
-
-function updateReferentiel($id, $libelle, $description, $image, $capacite, $session)
-{
+// Modifier la fonction updateReferentiel
+function updateReferentiel($id, $libelle, $description, $imageData, $capacite, $session) {
     global $execute;
+    
     $sql = "UPDATE referentiel 
             SET libelle = :libelle, 
                 description = :description, 
-                image = :image, 
                 capacite = :capacite, 
-                session = :session 
-            WHERE id_referentiel = :id";
+                session = :session";
+    
     $params = [
         ':libelle' => $libelle,
         ':description' => $description,
-        ':image' => $image,
         ':capacite' => $capacite,
         ':session' => $session,
         ':id' => $id
     ];
-    $result = $execute($sql, $params);
-    return $result !== false;
+    
+    // Ajouter l'image seulement si elle est fournie
+    if ($imageData !== null) {
+        $sql .= ", image = :image";
+        $params[':image'] = $imageData;
+    }
+    
+    $sql .= " WHERE id_referentiel = :id";
+    
+    return $execute($sql, $params) !== false;
 }
+
+// Ajouter une fonction pour récupérer l'image
+// function getReferentielImage($id) {
+//     global $executeselect;
+//     $sql = "SELECT image FROM referentiel WHERE id_referentiel = :id";
+//     $result = $executeselect($sql, false, [':id' => $id]);
+//     return $result ? $result['image'] : null;
+// }
 
 //====================fonction pour archiver un referentiel=====================
 

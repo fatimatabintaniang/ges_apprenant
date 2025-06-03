@@ -6,7 +6,7 @@ $page = $_REQUEST["page"];
 switch ($page) {
     case "listeReferentiel":
         $data = [
-            'referentiels' => findAllReferentiel($_GET['search'] ?? ''),
+        'referentiels' => findAllReferentiel($_GET['search'] ?? ''),
         'errors' => $_SESSION['errors'] ?? [],
         'old' => $_SESSION['old'] ?? [],
         'showConfirmModal' => isset($_GET['ask_confirm']) && isset($_GET['referentiel_id']),
@@ -33,6 +33,8 @@ switch ($page) {
 case "archiveReferentiel":
         archiveReferentielHandler();
         break;
+
+     
 
     default:
         header("Location: " . WEBROOB . "?controllers=referentiel&page=listeReferentiel");
