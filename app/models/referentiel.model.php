@@ -41,7 +41,7 @@ function findAllReferentiel($search = '')
 
 
 //========================================Ajout referentiel=========================================
-// Modifier la fonction addReferentiels
+// la fonction addReferentiels
 function addReferentiels($libelle, $description, $imageData, $capacite, $session) {
     global $execute, $executeselect;
     
@@ -61,7 +61,7 @@ function addReferentiels($libelle, $description, $imageData, $capacite, $session
     $params = [
         ':libelle' => $libelle,
         ':description' => $description,
-        ':image' => $imageData, // Maintenant nous stockons les données binaires
+        ':image' => $imageData,
         ':capacite' => (int)$capacite,
         ':session' => $session
     ];
@@ -69,7 +69,7 @@ function addReferentiels($libelle, $description, $imageData, $capacite, $session
     return $execute($sql, $params);
 }
 
-// Modifier la fonction updateReferentiel
+// la fonction updateReferentiel
 function updateReferentiel($id, $libelle, $description, $imageData, $capacite, $session) {
     global $execute;
     

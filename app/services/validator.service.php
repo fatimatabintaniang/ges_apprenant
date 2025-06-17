@@ -153,7 +153,7 @@ function validateData($data, $entityType)
                 $errors['date_naissance'] = "L'apprenant doit avoir au moins 16 ans";
             }
 
-             // Validation adresse
+             // Validation lieu de naissance
             if (empty(trim($data['lieu_naissance']))) {
                 $errors['lieu_naissance'] = "Le lieu de naissance est obligatoire";
             }
@@ -161,6 +161,10 @@ function validateData($data, $entityType)
             // Validation adresse
             if (empty(trim($data['adresse']))) {
                 $errors['adresse'] = "L'adresse est obligatoire";
+            }
+
+             if (empty(trim($data['mot_de_passe']))) {
+                $errors['mot_de_passe'] = "Le mot_de_passe est obligatoire";
             }
 
             // Validation image (si fournie)
@@ -187,14 +191,14 @@ function validateData($data, $entityType)
               if (empty(trim($data['telephone_tuteur']))) {
                 $errors['telephone_tuteur'] = "Le telephone du tuteur est obligatoire";
             }
-              if (empty(trim($data['lien']))) {
-                $errors['lien'] = "Le lien du tuteur est obligatoire";
+              if (empty(trim($data['lien_parente']))) {
+                $errors['lien_parente'] = "Le lien du tuteur est obligatoire";
             }
 
               if (empty(trim($data['adresse_tuteur']))) {
                 $errors['adresse_tuteur'] = "L'adresse' du tuteur est obligatoire";
             }
-        
+
             break;
 
         default:

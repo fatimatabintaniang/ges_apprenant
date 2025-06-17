@@ -290,7 +290,7 @@
               </div>
             </div>
 
-            <div class="mb-4">
+            <!-- <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700">Statut</label>
               <div class="mt-2">
                 <label class="inline-flex items-center">
@@ -302,7 +302,7 @@
                   <span class="ml-2">Inactif</span>
                 </label>
               </div>
-            </div>
+            </div> -->
 
             <!-- Dans la section référentiels -->
             <div class="mb-4">

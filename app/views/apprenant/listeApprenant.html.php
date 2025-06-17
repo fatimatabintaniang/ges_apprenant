@@ -252,19 +252,44 @@
                                             <p class="mt-1 text-sm text-red-600"><?= $errors['lieu_naissance'] ?></p>
                                         <?php endif; ?>
                                     </div>
-
+                                    <div>
+                                        <label for="mot_de_passe" class="block text-xs font-medium text-gray-700">Mot de passe</label>
+                                        <input type="password" id="mot_de_passe" name="mot_de_passe" value="<?= htmlspecialchars($old['mot_de_passe'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                                        <?php if (!empty($errors['mot_de_passe'])): ?>
+                                            <p class="mt-1 text-sm text-red-600"><?= $errors['mot_de_passe'] ?></p>
+                                        <?php endif; ?>
+                                    </div>
 
                                 </div>
 
-                                <!-- Champ Image -->
-                                <div class="mb-4">
-                                    <label for="referentielImage" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                                    <input type="file" name="image" id="referentielImage" accept="image/*" value="<?= htmlspecialchars($old['image'] ?? '') ?>"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
-                                    <?php if (!empty($errors['image'])): ?>
-                                        <p class="mt-1 text-sm text-red-600"><?= $errors['image'] ?></p>
-                                    <?php endif; ?>
+                                <div>
+                                    <!-- Champ Image -->
+                                    <div class="mb-4">
+                                        <label for="referentielImage" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                                        <input type="file" name="image" id="referentielImage" accept="image/*" value="<?= htmlspecialchars($old['image'] ?? '') ?>"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+                                        <?php if (!empty($errors['image'])): ?>
+                                            <p class="mt-1 text-sm text-red-600"><?= $errors['image'] ?></p>
+                                        <?php endif; ?>
 
+
+                                    </div>
+
+                                    <div>
+                                        <input type="hidden" name="id_promotion" value="<?= $activePromotion['id_promotion'] ?? '' ?>">
+                                    </div>
+
+                                    <div>
+                                        <label for="id_referentiel" class="block text-xs font-medium text-gray-700">Référentiel</label>
+                                        <select name="id_referentiel" id="id_referentiel"  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                                            <option value="">-- Sélectionner un référentiel --</option>
+                                            <?php foreach ($referentiels as $ref): ?>
+                                                <option value="<?= $ref['id_referentiel'] ?>" <?= (isset($old['id_referentiel']) && $old['id_referentiel'] == $ref['id_referentiel']) ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($ref['libelle']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
 
                                 </div>
 
@@ -299,9 +324,9 @@
                                 <div>
                                     <div>
                                         <label for="tuteur_lien" class="block text-xs font-medium text-gray-700">Lien de parenté</label>
-                                        <input type="text" id="lien" name="lien" value="<?= htmlspecialchars($old['lien'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
-                                        <?php if (!empty($errors['lien'])): ?>
-                                            <p class="mt-1 text-sm text-red-600"><?= $errors['lien'] ?></p>
+                                        <input type="text" id="lien" name="lien_parente" value="<?= htmlspecialchars($old['lien_parente'] ?? '') ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500">
+                                        <?php if (!empty($errors['lien_parente'])): ?>
+                                            <p class="mt-1 text-sm text-red-600"><?= $errors['lien_parente'] ?></p>
                                         <?php endif; ?>
                                     </div>
                                     <div>

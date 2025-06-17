@@ -14,7 +14,7 @@ function findAllPromotion($filter = 'all', $search = '') {
             p.date_debut,
             p.date_fin,
             p.statut,
-            P.image,
+            p.image,
             STRING_AGG(r.libelle, ', ') AS referentiel,
             COUNT(DISTINCT a.id_apprenant) AS nombre_apprenants
         FROM 
@@ -49,22 +49,22 @@ function findAllPromotion($filter = 'all', $search = '') {
         $sql .= " WHERE " . implode(' AND ', $conditions);
     }
     
-    // Finalisation de la requête
+    // Finalisation de la requête avec tri personnalisé
     $sql .= "
         GROUP BY 
-            p.id_promotion, p.nom, p.date_debut, p.date_fin, p.statut,p.image
+            p.id_promotion, p.nom, p.date_debut, p.date_fin, p.statut, p.image
         ORDER BY 
-            p.date_debut DESC
+            CASE WHEN p.statut = 'Actif' THEN 0 ELSE 1 END, -- Les promotions actives en premier
+            p.date_debut DESC -- Puis tri par date décroissante
     ";
     
     try {
-      $promotions = $executeselect($sql, true, $params) ?: [];
+        $promotions = $executeselect($sql, true, $params) ?: [];
 
-       // Important : décoder les images BYTEA
+        // Important : décoder les images BYTEA
         foreach ($promotions as &$ref) {
             if (!empty($ref['image'])) {
-                // Si ton driver PDO est PostgreSQL, il faut "déséchapper" les données BYTEA
-                $ref['image'] = stream_get_contents($ref['image']); // Pour éviter des erreurs si 'image' est une ressource
+                $ref['image'] = stream_get_contents($ref['image']);
             }
         }
 
@@ -78,8 +78,20 @@ function findAllPromotion($filter = 'all', $search = '') {
 }
 
 //==================================================Ajout promotion=============================================
-function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut, $referentiels, $imageData) {
+function addPromotionWithReferentiels($nom, $date_debut, $date_fin, $statut='Inactif', $referentiels, $imageData) {
     global $execute, $executeselect;
+
+    // Vérifier s'il y a déjà une promotion active si on essaie d'en créer une active
+    if ($statut === 'Actif') {
+        $activePromotion = $executeselect(
+            "SELECT id_promotion FROM promotion WHERE statut = 'Actif' LIMIT 1",
+            false
+        );
+        
+        if ($activePromotion) {
+            throw new Exception("Une promotion est déjà active. Vous ne pouvez avoir qu'une seule promotion active à la fois.");
+        }
+    }
 
     // 1. Vérifier si le nom existe déjà
     $checkSql = "SELECT id_promotion FROM promotion WHERE nom = :nom";

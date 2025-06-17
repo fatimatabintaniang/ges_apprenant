@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 define ("WEBROOB","http://fatima.niang.ecole221.sn:8001");
 require_once "../app/models/model.php";
 require_once "../app/controllers/controller.php";
+require_once "../app/bootstrap/bootstrap.php";
 
 function run (){
     $controllers=[

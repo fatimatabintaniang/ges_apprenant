@@ -20,10 +20,22 @@ function showPromotionList() {
 }
 
 function addPromotionHandler() {
-    global $getDashboardStat;
+    global $getDashboardStat ,$executeselect;
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+         $activePromotion = $executeselect(
+            "SELECT id_promotion FROM promotion WHERE statut = 'Actif' LIMIT 1",
+            false
+        );
+        
+        // Si une promotion est déjà active et qu'on essaie d'en créer une nouvelle active
+        if ($activePromotion && ($_POST['statut'] ?? '') === 'Actif') {
+            $errors['statut'] = "Une promotion est déjà active. Vous ne pouvez avoir qu'une seule promotion active à la fois.";
+            $_POST['statut'] = 'Inactif'; // Forcer Inactif
+        } else {
+            // Par défaut Inactif
+            $_POST['statut'] = $_POST['statut'] ?? 'Inactif';
+        }
         $data = array_merge($_POST, ['image_file' => $_FILES['image'] ?? null]);
         $errors = validateData($data, 'promotion');
         
@@ -54,6 +66,7 @@ function addPromotionHandler() {
                 $escapedImage
 
             );
+           
             
             if ($success) {
                 $redirect = $_POST['redirect'] ?? '?controllers=promotion&page=listePromotion';
@@ -89,7 +102,15 @@ function togglePromotionStatus() {
         // Déterminer le nouveau statut
         $newStatus = ($currentStatus === 'Actif') ? 'Inactif' : 'Actif';
         
-        // Appel de la fonction du modèle
+        // Si on veut activer cette promotion
+        if ($newStatus === 'Actif') {
+            // Désactiver toutes les autres promotions actives
+            global $execute;
+            $execute("UPDATE promotion SET statut = 'Inactif' WHERE statut = 'Actif' AND id_promotion != :id", 
+                    [':id' => $id]);
+        }
+        
+        // Mettre à jour le statut de la promotion courante
         $success = updatePromotionStatus($id, $newStatus);
         
         if ($success) {

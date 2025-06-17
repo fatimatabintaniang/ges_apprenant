@@ -25,7 +25,7 @@
         echo "<pre>";
         print_r(func_get_args());
         echo "</pre>";
-        exit;
+        die;
     };
     
     $executeselect = function($sql, $isALL = false, $params = []) use ($connectToDatabase) {
@@ -80,7 +80,9 @@
 $execute = function($sql, $params = []) use ($connectToDatabase) {
     $pdo = $connectToDatabase();
     $stmt = $pdo->prepare($sql);
-    
+    // var_dump($params);
+    // var_dump($sql);
+    // die;
     try {
         if (!empty($params)) {
             foreach ($params as $key => $value) {
@@ -89,7 +91,8 @@ $execute = function($sql, $params = []) use ($connectToDatabase) {
             }
         }
         
-        return $stmt->execute();
+         $stmt->execute();
+         return $pdo->lastInsertId();
     } catch (PDOException $e) {
         error_log("Erreur SQL (execute): " . $e->getMessage() . " - Requête: " . $sql);
         return false;

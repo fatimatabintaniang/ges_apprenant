@@ -96,89 +96,86 @@ function updateApprenantStatus($id_apprenant, $new_status) {
     }
 }
 
-//==================================================Ajout promotion=============================================
-function addApprenantWithTuteur($nom, $prenom, $date_naissance, $lieu_naissance, $adresse, $telephone,$matricule, $email, $imageData, $tuteur) {
-    global $execute, $executeselect;
+function addApprenantWithTuteur(
+    $nom, $prenom, $date_naissance, $lieu_naissance, $adresse, $telephone, 
+    $email, $mot_de_passe, $nom_tuteur, $prenom_tuteur, $telephone_tuteur, 
+    $adresse_tuteur, $lien_parente, $imageData, $id_referentiel, $id_promotion, $matricule
+) {
+    global $execute, $executeselect, $dd;
 
-    // 1. Vérifier si l'email existe déjà
-    $checkSql = "SELECT id_apprenant FROM apprenant WHERE email = :email";
-    $existing = $executeselect($checkSql, false, [':email' => $email]);
-    
-    if ($existing) {
-        throw new Exception("Un apprenant avec cet email existe déjà");
+    // $id_promotion = getActivePromotion();
+    if (!$id_promotion) {
+        throw new Exception("Aucune promotion active n'est disponible");
     }
-
-    // 2. Ajouter l'apprenant
-    $sqlApprenant = "INSERT INTO apprenant (nom, prenom, date_naissance, lieu_naissance, adresse, telephone,matricule, email, image) 
-                    VALUES (:nom, :prenom, :date_naissance, :lieu_naissance, :adresse, :telephone,:matricule, :email, :image) 
-                    RETURNING id_apprenant";
     
-    $params = [
+    // 1. Insérer le tuteur
+    $sqlTuteur = "INSERT INTO tuteur (nom_tuteur, prenom_tuteur, telephone_tuteur, adresse_tuteur, lien_parente) 
+                  VALUES (:nom, :prenom, :telephone, :adresse, :lien) ";
+    
+    $paramsTuteur = [
+        ':nom' => $nom_tuteur,
+        ':prenom' => $prenom_tuteur,
+        ':telephone' => $telephone_tuteur,
+        ':adresse' => $adresse_tuteur,
+        ':lien' => $lien_parente
+    ];
+    
+    // $id_tuteur = $execute($sqlTuteur, $paramsTuteur);
+    // var_dump($id_tuteur);
+    // if (!$id_tuteur) return false;
+    
+    // 2. Insérer l'utilisateur
+    $sqlUser = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) 
+                VALUES (:nom, :prenom, :email, :mot_de_passe, 'Apprenant') ";
+    
+    $paramsUser = [
         ':nom' => $nom,
         ':prenom' => $prenom,
+        ':email' => $email,
+        ':mot_de_passe' => password_hash($mot_de_passe, PASSWORD_DEFAULT)
+    ];
+    
+    // $id_utilisateur = $execute($sqlUser, $paramsUser);
+    // var_dump($id_utilisateur);
+    // die("ok");
+    
+    // if (!$id_utilisateur) return false;
+    
+    // 3. Maintenant insérer l'apprenant
+    $sqlApprenant = "INSERT INTO apprenant (id_utilisateur, id_tuteur, date_de_naissance, lieu_de_naissance, 
+                     adresse, telephone, image, id_referentiel, id_promotion, matricule) 
+                     VALUES (:id_utilisateur, :id_tuteur, :date_naissance, :lieu_naissance, 
+                     :adresse, :telephone, :image, :id_referentiel, :id_promotion, :matricule)";
+    
+    $paramsApprenant = [
+        ':id_utilisateur' => 1,
+        ':id_tuteur' => 1,
         ':date_naissance' => $date_naissance,
         ':lieu_naissance' => $lieu_naissance,
         ':adresse' => $adresse,
         ':telephone' => $telephone,
-        ':matricule' => $matricule,
-        ':email' => $email,
-        ':image' => $imageData
+        ':image' => $imageData,
+        ':id_referentiel' => $id_referentiel,
+        ':id_promotion' => $id_promotion,
+        ':matricule' => $matricule
     ];
+
+    // var_dump($paramsApprenant);
+    //  die("ok");
     
-    $result = $executeselect($sqlApprenant, false, $params);
-    $apprenantId = $result['id_apprenant'];
-
-    // 3. Ajouter l'utilisateur
-    $sqlUser = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) 
-               VALUES (:nom, :prenom, :email, :mot_de_passe, 'Apprenant') 
-               RETURNING id_utilisateur";
-    
-    $userResult = $executeselect($sqlUser, false, [
-        ':nom' => $nom,
-        ':prenom' => $prenom,
-        ':email' => $email,
-        ':mot_de_passe' => $mot_de_passe
-    ]);
-    $userId = $userResult['id_utilisateur'];
-
-    // 4. Lier l'utilisateur à l'apprenant
-    $execute("UPDATE apprenant SET id_utilisateur = :userId WHERE id_apprenant = :apprenantId", [
-        ':userId' => $userId,
-        ':apprenantId' => $apprenantId
-    ]);
-
-    // 5. Vérifier si le tuteur existe déjà
-    $checkTuteurSql = "SELECT id_tuteur FROM tuteur WHERE telephone_tuteur = :telephone_tuteur";
-    $existingTuteur = $executeselect($checkTuteurSql, false, [':telephone_tuteur' => $tuteur['telephone_tuteur']]);
-    
-    if ($existingTuteur) {
-        // Le tuteur existe déjà, on lie simplement l'apprenant
-        $tuteurId = $existingTuteur['id_tuteur'];
-        $execute("UPDATE apprenant SET id_tuteur = :tuteurId WHERE id_apprenant = :apprenantId", [
-            ':tuteurId' => $tuteurId,
-            ':apprenantId' => $apprenantId
-        ]);
-    } else {
-        // Le tuteur n'existe pas, on le crée et on lie l'apprenant
-        $sqlTuteur = "INSERT INTO tuteur (nom_tuteur, prenom_tuteur, telephone_tuteur, adresse_tuteur, lieu_parente) 
-                     VALUES (:nom_tuteur, :prenom_tuteur, :telephone_tuteur, :adresse_tuteur, :lieu_parente)
-                     RETURNING id_tuteur";
-        
-        $tuteurResult = $executeselect($sqlTuteur, false, [
-            ':nom_tuteur' => $tuteur['nom_tuteur'],
-            ':prenom_tuteur' => $tuteur['prenom_tuteur'],
-            ':telephone_tuteur' => $tuteur['telephone_tuteur'],
-            ':adresse_tuteur' => $tuteur['adresse_tuteur'],
-            ':lieu_parente' => $tuteur['lieu_parente']
-        ]);
-        $tuteurId = $tuteurResult['id_tuteur'];
-        
-        $execute("UPDATE apprenant SET id_tuteur = :tuteurId WHERE id_apprenant = :apprenantId", [
-            ':tuteurId' => $tuteurId,
-            ':apprenantId' => $apprenantId
-        ]);
-    }
-
-    return $apprenantId;
+    $success = $execute($sqlApprenant, $paramsApprenant);
+    return $success ?? false;
 }
+
+
+function getActivePromotion() {
+    global $executeselect;
+    
+    $sql = "SELECT id_promotion, nom AS promotion FROM promotion WHERE statut = 'Actif' LIMIT 1";
+    $result = $executeselect($sql, false);
+    
+    return $result ? $result : null;
+}
+
+
 
