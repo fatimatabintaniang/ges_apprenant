@@ -120,9 +120,9 @@ function addApprenantWithTuteur(
         ':lien' => $lien_parente
     ];
     
-    // $id_tuteur = $execute($sqlTuteur, $paramsTuteur);
+     $id_tuteur = $execute($sqlTuteur, $paramsTuteur);
     // var_dump($id_tuteur);
-    // if (!$id_tuteur) return false;
+    if (!$id_tuteur) return false;
     
     // 2. Insérer l'utilisateur
     $sqlUser = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) 
@@ -135,11 +135,11 @@ function addApprenantWithTuteur(
         ':mot_de_passe' => password_hash($mot_de_passe, PASSWORD_DEFAULT)
     ];
     
-    // $id_utilisateur = $execute($sqlUser, $paramsUser);
+     $id_utilisateur = $execute($sqlUser, $paramsUser);
     // var_dump($id_utilisateur);
     // die("ok");
     
-    // if (!$id_utilisateur) return false;
+     if (!$id_utilisateur) return false;
     
     // 3. Maintenant insérer l'apprenant
     $sqlApprenant = "INSERT INTO apprenant (id_utilisateur, id_tuteur, date_de_naissance, lieu_de_naissance, 
@@ -148,8 +148,8 @@ function addApprenantWithTuteur(
                      :adresse, :telephone, :image, :id_referentiel, :id_promotion, :matricule)";
     
     $paramsApprenant = [
-        ':id_utilisateur' => 1,
-        ':id_tuteur' => 1,
+        ':id_utilisateur' => $id_utilisateur,
+        ':id_tuteur' => $id_tuteur,
         ':date_naissance' => $date_naissance,
         ':lieu_naissance' => $lieu_naissance,
         ':adresse' => $adresse,
@@ -165,6 +165,80 @@ function addApprenantWithTuteur(
     
     $success = $execute($sqlApprenant, $paramsApprenant);
     return $success ?? false;
+}
+
+function addApprenantWithTuteur2(
+    $nom, $prenom, $date_naissance, $lieu_naissance, $adresse, $telephone, 
+    $email, $mot_de_passe, $nom_tuteur, $prenom_tuteur, $telephone_tuteur, 
+    $adresse_tuteur, $lien_parente, $imageData, $id_referentiel, $id_promotion, $matricule,$statut='actif'
+) {
+    global $connectToDatabase;
+
+    if (!$id_promotion) {
+        throw new Exception("Aucune promotion active n'est disponible");
+    }
+
+    $pdo = $connectToDatabase();
+
+    try {
+        // Démarrer la transaction
+        $pdo->beginTransaction();
+
+        // 1. Insertion du tuteur
+        $sqlTuteur = "INSERT INTO tuteur (nom_tuteur, prenom_tuteur, telephone_tuteur, adresse_tuteur, lien_parente) 
+                      VALUES (:nom, :prenom, :telephone, :adresse, :lien)";
+        $stmtTuteur = $pdo->prepare($sqlTuteur);
+        $stmtTuteur->execute([
+            ':nom' => $nom_tuteur,
+            ':prenom' => $prenom_tuteur,
+            ':telephone' => $telephone_tuteur,
+            ':adresse' => $adresse_tuteur,
+            ':lien' => $lien_parente
+        ]);
+        $id_tuteur = $pdo->lastInsertId();
+
+        // 2. Insertion de l'utilisateur
+        $sqlUser = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) 
+                    VALUES (:nom, :prenom, :email, :mot_de_passe, 'Apprenant')";
+        $stmtUser = $pdo->prepare($sqlUser);
+        $stmtUser->execute([
+            ':nom' => $nom,
+            ':prenom' => $prenom,
+            ':email' => $email,
+            ':mot_de_passe' => password_hash($mot_de_passe, PASSWORD_DEFAULT)
+        ]);
+        $id_utilisateur = $pdo->lastInsertId();
+
+        // 3. Insertion de l'apprenant
+        $sqlApprenant = "INSERT INTO apprenant (id_utilisateur, id_tuteur, date_de_naissance, lieu_de_naissance, 
+                         adresse, telephone, image, id_referentiel, id_promotion, matricule,statut) 
+                         VALUES (:id_utilisateur, :id_tuteur, :date_naissance, :lieu_naissance, 
+                         :adresse, :telephone, :image, :id_referentiel, :id_promotion, :matricule,:statut)";
+        $stmtApprenant = $pdo->prepare($sqlApprenant);
+        $stmtApprenant->execute([
+            ':id_utilisateur' => $id_utilisateur,
+            ':id_tuteur' => $id_tuteur,
+            ':date_naissance' => $date_naissance,
+            ':lieu_naissance' => $lieu_naissance,
+            ':adresse' => $adresse,
+            ':telephone' => $telephone,
+            ':image' => $imageData,
+            ':id_referentiel' => $id_referentiel,
+            ':id_promotion' => $id_promotion,
+            ':matricule' => $matricule,
+            ':statut'=>$statut
+        ]);
+
+        // Valider la transaction
+        $pdo->commit();
+        return true;
+
+    } catch (Exception $e) {
+        // Annuler la transaction en cas d'erreur
+        $pdo->rollBack();
+        error_log("Erreur lors de l'ajout de l'apprenant avec tuteur : " . $e->getMessage());
+        return false;
+    }
 }
 
 

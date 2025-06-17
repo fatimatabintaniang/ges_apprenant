@@ -80,9 +80,6 @@
 $execute = function($sql, $params = []) use ($connectToDatabase) {
     $pdo = $connectToDatabase();
     $stmt = $pdo->prepare($sql);
-    // var_dump($params);
-    // var_dump($sql);
-    // die;
     try {
         if (!empty($params)) {
             foreach ($params as $key => $value) {
@@ -99,13 +96,33 @@ $execute = function($sql, $params = []) use ($connectToDatabase) {
     }
 };
 
+$execute2 = function($sql, $params = [], $pdo = null) use ($connectToDatabase) {
+    if (!$pdo) {
+        $pdo = $connectToDatabase();
+    }
+    $stmt = $pdo->prepare($sql);
+    try {
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return $pdo->lastInsertId();
+    } catch (PDOException $e) {
+        error_log("Erreur SQL : " . $e->getMessage());
+        return false;
+    }
+};
+
 function getMimeTypeFromBinary($binaryData): string
 {
+     if (is_resource($binaryData)) {
+        $binaryData = stream_get_contents($binaryData);
+    }
+
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_buffer($finfo, $binaryData);
     finfo_close($finfo);
-
-    return $mimeType ?: 'application/octet-stream';
+    return $mimeType;
 }
 
 $global = compact('connectToDatabase',   'isEmpty' , 'dd', 'executeselect', 'execute','getDashboardStat');

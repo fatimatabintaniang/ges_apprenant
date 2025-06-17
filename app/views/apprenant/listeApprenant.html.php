@@ -118,7 +118,7 @@
                                         <?php if (!empty($apprenant['image'])): ?>
                                             <?php $mime = getMimeTypeFromBinary($apprenant['image']); ?>
                                             <img class="rounded w-10 h-10 object-cover"
-                                                src="data:<?= $mime ?>;base64,<?= base64_encode($apprenant['image']) ?>"
+                                                src="data:<?= $mime ?>;base64,<?= base64_encode(is_resource($apprenant['image']) ? stream_get_contents($apprenant['image']) : $apprenant['image']) ?>"
                                                 alt="Image du référentiel">
                                         <?php else: ?>
                                             <div class="w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-500">
