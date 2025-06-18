@@ -141,7 +141,26 @@ function validateData($data, $entityType)
 
             // Validation téléphone
             if (empty(trim($data['telephone']))) {
-                $errors['telephone'] = "Le telephone est obligatoire";
+                $errors['telephone'] = "Le téléphone est obligatoire";
+            } else {
+                // Nettoyage et normalisation du numéro
+                $phone = preg_replace('/[^0-9]/', '', trim($data['telephone']));
+
+                // Validation du format (exemple: entre 8 et 15 chiffres)
+                if (!preg_match('/^[0-9]{8,15}$/', $phone)) {
+                    $errors['telephone'] = "Format de téléphone invalide";
+                } else {
+                    // Vérification de l'unicité dans la base
+                    $existing = $executeselect(
+                        "SELECT COUNT(*) as count FROM apprenant WHERE telephone = :phone",
+                        false,
+                        [':phone' => $phone]
+                    );
+
+                    if ($existing['count'] > 0) {
+                        $errors['telephone'] = "Ce numéro est déjà utilisé";
+                    }
+                }
             }
 
             // Validation date de naissance
@@ -153,7 +172,7 @@ function validateData($data, $entityType)
                 $errors['date_naissance'] = "L'apprenant doit avoir au moins 16 ans";
             }
 
-             // Validation lieu de naissance
+            // Validation lieu de naissance
             if (empty(trim($data['lieu_naissance']))) {
                 $errors['lieu_naissance'] = "Le lieu de naissance est obligatoire";
             }
@@ -163,7 +182,7 @@ function validateData($data, $entityType)
                 $errors['adresse'] = "L'adresse est obligatoire";
             }
 
-             if (empty(trim($data['mot_de_passe']))) {
+            if (empty(trim($data['mot_de_passe']))) {
                 $errors['mot_de_passe'] = "Le mot_de_passe est obligatoire";
             }
 
@@ -180,22 +199,36 @@ function validateData($data, $entityType)
             }
 
             // Validation tuteur(s)
-              if (empty(trim($data['nom_tuteur']))) {
+            if (empty(trim($data['nom_tuteur']))) {
                 $errors['nom_tuteur'] = "Le nom du tuteur est obligatoire";
             }
 
-              if (empty(trim($data['prenom_tuteur']))) {
+            if (empty(trim($data['prenom_tuteur']))) {
                 $errors['prenom_tuteur'] = "Le prenom du tuteur est obligatoire";
             }
 
-              if (empty(trim($data['telephone_tuteur']))) {
-                $errors['telephone_tuteur'] = "Le telephone du tuteur est obligatoire";
+            $phone = preg_replace('/[^0-9]/', '', trim($data['telephone_tuteur'] ?? ''));
+
+            if (empty($phone)) {
+                $errors['telephone_tuteur'] = "Le téléphone du tuteur est obligatoire";
+            } elseif (!preg_match('/^[0-9]{8,15}$/', $phone)) {
+                $errors['telephone_tuteur'] = "Format de téléphone invalide (8-15 chiffres)";
+            } else {
+                $existing = $executeselect(
+                    "SELECT COUNT(*) as count FROM tuteur WHERE telephone_tuteur = :phone",
+                    false,
+                    [':phone' => $phone]
+                );
+
+                if ($existing['count'] > 0) {
+                    $errors['telephone_tuteur'] = "Ce numéro est déjà utilisé";
+                }
             }
-              if (empty(trim($data['lien_parente']))) {
+            if (empty(trim($data['lien_parente']))) {
                 $errors['lien_parente'] = "Le lien du tuteur est obligatoire";
             }
 
-              if (empty(trim($data['adresse_tuteur']))) {
+            if (empty(trim($data['adresse_tuteur']))) {
                 $errors['adresse_tuteur'] = "L'adresse' du tuteur est obligatoire";
             }
 

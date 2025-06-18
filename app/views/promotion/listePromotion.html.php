@@ -208,8 +208,8 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <?= htmlspecialchars($promotion["date_fin"] ?? 'Non assigné') ?>
                   </td>
-                  <td class="px-6 py-4  text-sm text-gray-500">
-                    <?= htmlspecialchars($promotion["referentiel"] ?? 'Non défini') ?>
+                  <td class="px-6 py-4  text-sm text-gray-500 ">
+                    <?= htmlspecialchars($promotion["referentiel"] ?? 'Non défini')?>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-2">

@@ -72,13 +72,17 @@
                     </div>
 
                     <div>
-                        <a href="?controllers=apprenant&page=listeApprenant&tab=<?= $_GET['tab'] ?? 'retenus' ?>&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>&showModal=1" class="bg-orange-500 text-white text-xs  p-2 rounded-lg flex items-center gap-2 hover:bg-orange-600 transition">
-                            Telecharger la liste<i class="ri-add-line"></i>
-                        </a>
+                      <details class="dropdown">
+                            <summary class="btn bg-orange-500 text-white  rounded-lg shadow-sm  flex items-center  hover:bg-orange-600 transition">Telecharger la liste <i class="ri-add-line"></i></summary>
+                            <ul class="menu dropdown-content bg-white w-full font-bold">
+                                <li><a class="text-red-500">PDF <i class="ri-file-pdf-2-fill flex justify-end text-xl"></i></a></li>
+                                <li><a class="text-green-500 ">Excel <i class="ri-file-excel-fill flex justify-end text-xl"></i></a></li>
+                            </ul>
+                        </details>
                     </div>
 
                     <div>
-                        <a href="?controllers=apprenant&page=listeApprenant&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>&showModal=1" class="bg-orange-500 text-white text-xs p-2 rounded-lg flex items-center gap-2 hover:bg-orange-600 transition">
+                        <a href="?controllers=apprenant&page=listeApprenant&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>&showModal=1" class="bg-orange-500 text-white text-xs font-bold p-3 rounded-lg flex items-center gap-2 hover:bg-orange-600 transition">
                             <i class="ri-add-line"></i> Ajouter Apprenant
                         </a>
 
@@ -114,18 +118,29 @@
 
                             foreach ($apprenantsFiltres as $apprenant): ?>
                                 <tr>
+
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <?php if (!empty($apprenant['image'])): ?>
-                                            <?php $mime = getMimeTypeFromBinary($apprenant['image']); ?>
+                                            <?php
+                                            // Déséscapez les données si nécessaire (pour PostgreSQL)
+                                            $imageData = is_resource($apprenant['image']) ?
+                                                stream_get_contents($apprenant['image']) :
+                                                $apprenant['image'];
+
+                                            // Détection du type MIME
+                                            $finfo = new finfo(FILEINFO_MIME_TYPE);
+                                            $mime = $finfo->buffer($imageData);
+                                            ?>
                                             <img class="rounded w-10 h-10 object-cover"
-                                                src="data:<?= $mime ?>;base64,<?= base64_encode(is_resource($apprenant['image']) ? stream_get_contents($apprenant['image']) : $apprenant['image']) ?>"
-                                                alt="Image du référentiel">
+                                                src="data:<?= $mime ?>;base64,<?= base64_encode($imageData) ?>"
+                                                alt="Image de l'apprenant">
                                         <?php else: ?>
                                             <div class="w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-500">
-                                                Pas d’image
                                             </div>
                                         <?php endif; ?>
                                     </td>
+
+
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         <?= htmlspecialchars($apprenant["matricule"] ?? 'Non défini') ?>
                                     </td>
@@ -182,7 +197,7 @@
                 <!-- Modal d'ajout de apprenant -->
                 <div id="addApprenantModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50   
 <?= (isset($_GET['showModal']) || (isset($showModal) && $showModal)) ? 'block' : 'hidden' ?>">
-                    <div class="bg-white rounded-lg p-6 w-[80%] h-[95vh] overflow-y-auto">
+                    <div class="bg-white rounded-lg p-6 w-[80%] h-[95vh] overflow-y-auto mt-24">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold text-orange-500">Ajout Apprenant</h3>
                             <a href="?controllers=apprenant&page=listeApprenant&statusFilter=<?= $_GET['statusFilter'] ?? 'all' ?>&search=<?= $_GET['search'] ?? '' ?>" class="text-gray-500 hover:text-gray-700">
@@ -281,7 +296,7 @@
 
                                     <div>
                                         <label for="id_referentiel" class="block text-xs font-medium text-gray-700">Référentiel</label>
-                                        <select name="id_referentiel" id="id_referentiel"  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                                        <select name="id_referentiel" id="id_referentiel" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                                             <option value="">-- Sélectionner un référentiel --</option>
                                             <?php foreach ($referentiels as $ref): ?>
                                                 <option value="<?= $ref['id_referentiel'] ?>" <?= (isset($old['id_referentiel']) && $old['id_referentiel'] == $ref['id_referentiel']) ? 'selected' : '' ?>>

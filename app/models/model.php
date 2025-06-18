@@ -77,39 +77,40 @@
         return $stats;
     };
 
-$execute = function($sql, $params = []) use ($connectToDatabase) {
-    $pdo = $connectToDatabase();
+    $execute = function($sql, $params = [], $pdo = null) use ($connectToDatabase) {
+    // Gestion de la connexion PDO
+    $shouldCloseConnection = false;
+    if ($pdo === null) {
+        $pdo = $connectToDatabase();
+        $shouldCloseConnection = true;
+    }
+
     $stmt = $pdo->prepare($sql);
+    
     try {
+        // Binding des paramètres
         if (!empty($params)) {
             foreach ($params as $key => $value) {
+                // Support à la fois pour les clés numériques et nommées
+                $paramName = is_int($key) ? $key + 1 : $key;
                 $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
-                $stmt->bindValue(is_int($key) ? $key + 1 : $key, $value, $paramType);
+                $stmt->bindValue($paramName, $value, $paramType);
             }
         }
         
-         $stmt->execute();
-         return $pdo->lastInsertId();
+        $stmt->execute();
+        
+        // Retourne le lastInsertId pour les INSERT, sinon true
+        return $stmt->rowCount() > 0 ? $pdo->lastInsertId() : true;
+        
     } catch (PDOException $e) {
         error_log("Erreur SQL (execute): " . $e->getMessage() . " - Requête: " . $sql);
         return false;
-    }
-};
-
-$execute2 = function($sql, $params = [], $pdo = null) use ($connectToDatabase) {
-    if (!$pdo) {
-        $pdo = $connectToDatabase();
-    }
-    $stmt = $pdo->prepare($sql);
-    try {
-        foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    } finally {
+        // Fermeture de la connexion si nous l'avons créée ici
+        if ($shouldCloseConnection) {
+            $pdo = null;
         }
-        $stmt->execute();
-        return $pdo->lastInsertId();
-    } catch (PDOException $e) {
-        error_log("Erreur SQL : " . $e->getMessage());
-        return false;
     }
 };
 

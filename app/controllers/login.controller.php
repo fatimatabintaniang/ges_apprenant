@@ -39,6 +39,7 @@ if (isset($_SESSION['utilisateur'])) {
 
 // Traitement des autres pages
 if (isset($_REQUEST["page"])) {
+    global $findUserConnect;
     $page = $_REQUEST["page"] ?? "login";
     $errors = [];
     $resetErrors = [];

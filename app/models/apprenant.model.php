@@ -96,78 +96,8 @@ function updateApprenantStatus($id_apprenant, $new_status) {
     }
 }
 
+
 function addApprenantWithTuteur(
-    $nom, $prenom, $date_naissance, $lieu_naissance, $adresse, $telephone, 
-    $email, $mot_de_passe, $nom_tuteur, $prenom_tuteur, $telephone_tuteur, 
-    $adresse_tuteur, $lien_parente, $imageData, $id_referentiel, $id_promotion, $matricule
-) {
-    global $execute, $executeselect, $dd;
-
-    // $id_promotion = getActivePromotion();
-    if (!$id_promotion) {
-        throw new Exception("Aucune promotion active n'est disponible");
-    }
-    
-    // 1. Insérer le tuteur
-    $sqlTuteur = "INSERT INTO tuteur (nom_tuteur, prenom_tuteur, telephone_tuteur, adresse_tuteur, lien_parente) 
-                  VALUES (:nom, :prenom, :telephone, :adresse, :lien) ";
-    
-    $paramsTuteur = [
-        ':nom' => $nom_tuteur,
-        ':prenom' => $prenom_tuteur,
-        ':telephone' => $telephone_tuteur,
-        ':adresse' => $adresse_tuteur,
-        ':lien' => $lien_parente
-    ];
-    
-     $id_tuteur = $execute($sqlTuteur, $paramsTuteur);
-    // var_dump($id_tuteur);
-    if (!$id_tuteur) return false;
-    
-    // 2. Insérer l'utilisateur
-    $sqlUser = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role) 
-                VALUES (:nom, :prenom, :email, :mot_de_passe, 'Apprenant') ";
-    
-    $paramsUser = [
-        ':nom' => $nom,
-        ':prenom' => $prenom,
-        ':email' => $email,
-        ':mot_de_passe' => password_hash($mot_de_passe, PASSWORD_DEFAULT)
-    ];
-    
-     $id_utilisateur = $execute($sqlUser, $paramsUser);
-    // var_dump($id_utilisateur);
-    // die("ok");
-    
-     if (!$id_utilisateur) return false;
-    
-    // 3. Maintenant insérer l'apprenant
-    $sqlApprenant = "INSERT INTO apprenant (id_utilisateur, id_tuteur, date_de_naissance, lieu_de_naissance, 
-                     adresse, telephone, image, id_referentiel, id_promotion, matricule) 
-                     VALUES (:id_utilisateur, :id_tuteur, :date_naissance, :lieu_naissance, 
-                     :adresse, :telephone, :image, :id_referentiel, :id_promotion, :matricule)";
-    
-    $paramsApprenant = [
-        ':id_utilisateur' => $id_utilisateur,
-        ':id_tuteur' => $id_tuteur,
-        ':date_naissance' => $date_naissance,
-        ':lieu_naissance' => $lieu_naissance,
-        ':adresse' => $adresse,
-        ':telephone' => $telephone,
-        ':image' => $imageData,
-        ':id_referentiel' => $id_referentiel,
-        ':id_promotion' => $id_promotion,
-        ':matricule' => $matricule
-    ];
-
-    // var_dump($paramsApprenant);
-    //  die("ok");
-    
-    $success = $execute($sqlApprenant, $paramsApprenant);
-    return $success ?? false;
-}
-
-function addApprenantWithTuteur2(
     $nom, $prenom, $date_naissance, $lieu_naissance, $adresse, $telephone, 
     $email, $mot_de_passe, $nom_tuteur, $prenom_tuteur, $telephone_tuteur, 
     $adresse_tuteur, $lien_parente, $imageData, $id_referentiel, $id_promotion, $matricule,$statut='actif'
@@ -205,7 +135,7 @@ function addApprenantWithTuteur2(
             ':nom' => $nom,
             ':prenom' => $prenom,
             ':email' => $email,
-            ':mot_de_passe' => password_hash($mot_de_passe, PASSWORD_DEFAULT)
+            ':mot_de_passe' =>$mot_de_passe
         ]);
         $id_utilisateur = $pdo->lastInsertId();
 
